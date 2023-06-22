@@ -163,12 +163,13 @@ def CheckTajweedLaws(next_word):
 def upload_image():
     start = timer()
     data = request.get_json()
-    if 'path' not in data:
-        return jsonify({"message": "No File Detected"}), 422
+    if 'path' in request.form:
+        base64_image = request.form['path']
     elif 'path' in data:
         base64_image = data['path']
-    if base64_image == '':
+    else:
         return jsonify({"message": "No File Selected"}), 422
+    
     image_decoded = base64.b64decode(base64_image)
     image_extension = imghdr.what(None, h=image_decoded)
     if image_extension not in ALLOWED_EXTENSIONS:
@@ -202,17 +203,6 @@ def upload_image():
 
             # Get Verse From Quran Using Arabic Word Search
             quran_sound = QuranVerseSound(arabic_text)
-
-            # url = "https://www.alfanous.org/api/search?query=" + arabic_text
-            # try:
-            #     response = requests.get(url)
-            #     data = response.json()
-            #     if data and data['search']['ayas']:
-            #         quran_sound = data['search']['ayas']['1']['aya']['recitation']
-            #     else:
-            #         quran_sound = "Not Found"
-            # except ConnectionError:
-            #     quran_sound = "Max retries exceeded"
         
             # Check Word After Nun Sukun
             next_word = CheckWordAfterNoonSaakin(arrayLength, words)
