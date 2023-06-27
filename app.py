@@ -1,17 +1,15 @@
 import os
-import PIL
 import requests
 import base64
 import imghdr
+import re
 from requests.adapters import HTTPAdapter, Retry
 from timeit import default_timer as timer
 from io import BytesIO
 from ArabicOcr import arabicocr
 from datetime import datetime
 from flask import Flask, request, jsonify
-from pathlib import Path
 from PIL import Image
-from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -27,23 +25,24 @@ def ArabicOCR(image):
     return results
 
 def QuranVerseSound(arabic_text):
-    session = requests.Session()
-    retry = Retry(connect=3, backoff_factor=0.5)
-    adapter = HTTPAdapter(max_retries=retry)
-    session.mount('http://', adapter)
-    session.mount('https://', adapter)
+    try:
+        url = "https://www.alfanous.org/api/search?query=" + arabic_text
+        response = requests.get(url)
 
-    url = "https://www.alfanous.org/api/search?query=" + arabic_text
-    response = session.get(url, timeout=5)
-
-    data = response.json()
-    response.close()
-    if data and data['search']['ayas']:
-        quran_sound = data['search']['ayas']['1']['aya']['recitation']
-    else:
-        quran_sound = "Not Found"
-    
-    return quran_sound
+        data = response.json()
+        response.close()
+        if data:
+            if data['error']:
+                quran_sound = "Not Found"
+            elif data['search']['ayas']:
+                quran_sound = data['search']['ayas']['1']['aya']['recitation']
+        else:
+            quran_sound = "Not Found"
+        
+        return quran_sound
+    except requests.exceptions.ConnectionError:
+        quran_sound = "Max retires exceeded"
+        return quran_sound
 
 def CheckWordAfterNoonSaakin(arrayLength, words):
     for i in range(arrayLength):
@@ -51,7 +50,6 @@ def CheckWordAfterNoonSaakin(arrayLength, words):
             for j in range(len(words[i])):
                 if words[i][j] == 'ن':
                     index = i, j
-                    wordLength = len(words[i])
                     if index[1] < len(words[i])-1:
                         if words[index[0]][index[1]+1] == ' ':
                             next_word = words[index[0]][index[1]+2]
@@ -197,6 +195,7 @@ def upload_image():
         if arrayLength > 0:
             # Turn Text Into String
             arabic_text = ' '.join(words)
+            arabic_text = re.sub(' +', ' ', arabic_text)
             words = []
             words.append(arabic_text)
             arrayLength = len(words)
