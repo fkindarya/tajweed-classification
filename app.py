@@ -3,7 +3,6 @@ import requests
 import base64
 import imghdr
 import re
-from requests.adapters import HTTPAdapter, Retry
 from timeit import default_timer as timer
 from io import BytesIO
 from ArabicOcr import arabicocr
@@ -32,10 +31,10 @@ def QuranVerseSound(arabic_text):
         data = response.json()
         response.close()
         if data:
-            if data['error']:
-                quran_sound = "Not Found"
-            elif data['search']['ayas']:
+            if data['search']['ayas']:
                 quran_sound = data['search']['ayas']['1']['aya']['recitation']
+            else:
+                quran_sound = "Not Found"
         else:
             quran_sound = "Not Found"
         
