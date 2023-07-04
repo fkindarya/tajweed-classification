@@ -156,6 +156,10 @@ def CheckTajweedLaws(next_word):
         sound = "No sound"
     return law, sound
 
+@app.route('/')
+def hello_world():
+    return jsonify("Hello World"),200
+
 @app.route('/upload-image-base64', methods=['POST'])
 def upload_image():
     start = timer()
