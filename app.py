@@ -7,7 +7,7 @@ from timeit import default_timer as timer
 from io import BytesIO
 from ArabicOcr import arabicocr
 from datetime import datetime
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for
 from PIL import Image
 from werkzeug.utils import secure_filename
 
@@ -302,6 +302,14 @@ def upload_image():
             return jsonify(objectData)
         else:
             return jsonify({"message": "Image Not Detected"}), 422
+
+@app.route('/delete', methods=['POST'])
+def delete_filename():
+    filename = request.form.get('filename')
+    new_filename = filename.rsplit('/')[4]
+    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], new_filename))
+
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run()
