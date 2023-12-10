@@ -221,8 +221,10 @@ def upload_image_base64_web():
                 display_sound = sound_how_to_read
 
             return render_template('result.html', image = request.host_url + app.config['UPLOAD_FOLDER'] + filename, arabic_text = arabic_text, word_after_noon_sakin = next_word, tajweed_law = law, sound_how_to_read = display_sound)
+        else:
+            return render_template('error.html')
     else:
-        return render_template('')
+        return render_template('error.html')
 
 @app.route('/upload-image-base64', methods=['POST'])
 def upload_image():
